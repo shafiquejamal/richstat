@@ -31,7 +31,7 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
     }
     
     val newRowsNullAge:Seq[(Option[Double], Option[String], String)] =
-      Seq((None, None, "CA"), (None, Some("M"), "US"), (None, None, ""))
+      Seq((None, None, "CA"), (None, Some("MALE"), "US"), (None, None, ""))
     val data: DataFrame = sc.parallelize(histogramData).toDF("age", "gender", "country").union(newRowsNullAge.toDF)
     
     val dataWithoutNullAge = data.filter(!col("age").isNull).cache()
