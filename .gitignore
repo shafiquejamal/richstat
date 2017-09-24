@@ -1,0 +1,14 @@
+/RUNNING_PID
+/logs/
+/project/*-shim.sbt
+/project/project/
+/project/target/
+/target/
+.idea/
+spark-warehouse/
+derby.log
+metastore_db/
+.DS_Store
+*.csv
+.ensime
+.ensime_cache/
