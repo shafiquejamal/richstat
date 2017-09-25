@@ -6,11 +6,11 @@ val sparkTestingVersion = sparkVersion + "_0.7.4"
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
-      organization := "com.example",
+      organization := "com.eigenroute",
       scalaVersion := "2.11.11",
       version      := "0.0.1"
     )),
-    name := "Hello",
+    name := "RichStat",
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % sparkVersion,
       "org.apache.spark" %% "spark-sql" % sparkVersion,

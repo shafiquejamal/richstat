@@ -54,7 +54,7 @@ data.tab("gender", Percent).show()
 ```
 By default, rows in the DataFrame whose value for the variable of interest is null or emty are omitted. But you can include them by specifying the `IncludeMissing` option:
 ```
-data.crossTab("gender", "country", Percent, IncludeMissing).show()
+data.crossTab("gender", "country", IncludeMissing).show()
 ```
 ...and voila:
 ```
