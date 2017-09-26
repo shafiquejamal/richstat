@@ -6,7 +6,7 @@ val sparkTestingVersion = sparkVersion + "_0.7.4"
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
-      organization := "com.eigenroute",
+      organization := "com.github.shafiquejamal",
       scalaVersion := "2.11.11",
       version      := "0.0.1"
     )),

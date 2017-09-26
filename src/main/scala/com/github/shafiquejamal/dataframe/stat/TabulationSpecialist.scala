@@ -1,7 +1,7 @@
-package com.eigenroute.dataframe.stat
+package com.github.shafiquejamal.dataframe.stat
 
-import com.eigenroute.dataframe.stat.RichStat.TabOptions
-import com.eigenroute.dataframe.stat.RichStat.TabOptions._
+import com.github.shafiquejamal.dataframe.stat.RichStat.TabOptions
+import com.github.shafiquejamal.dataframe.stat.RichStat.TabOptions.{ByColumn, ByRow, IncludeMissing, Percent}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset}
 

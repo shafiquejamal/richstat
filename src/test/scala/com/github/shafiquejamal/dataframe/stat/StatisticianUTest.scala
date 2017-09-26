@@ -1,7 +1,7 @@
-package com.eigenroute.dataframe.stat
+package com.github.shafiquejamal.dataframe.stat
 
-import com.eigenroute.dataframe.stat.RichStat.TabOptions._
-import com.eigenroute.dataframe.stat.RichStat._
+import com.github.shafiquejamal.dataframe.stat.RichStat.TabOptions._
+import com.github.shafiquejamal.dataframe.stat.RichStat._
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._

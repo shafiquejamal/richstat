@@ -1,4 +1,4 @@
-package com.eigenroute.dataframe.stat
+package com.github.shafiquejamal.dataframe.stat
 
 import org.apache.spark.sql.{DataFrame, Dataset}
 
