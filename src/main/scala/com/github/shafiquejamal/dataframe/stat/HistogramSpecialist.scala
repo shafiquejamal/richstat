@@ -6,47 +6,47 @@ import org.apache.spark.sql.{DataFrame, Dataset}
 
 object HistogramSpecialist {
   
-  def histogram(ds:Dataset[_], variable: String, bucketDemarcations: Array[Double], crossTabVariables: String*):
+  def histogram(df:DataFrame, variable: String, bucketDemarcations: Array[Double], crossTabVariables: String*):
   DataFrame = {
     val (factor, columnName) = (1d, "proportion")
-    val dsNonNullVariable = ds.filter(!col(variable).isNull)
+    val dsNonNullVariable = df.filter(!col(variable).isNull)
     val baseHistogram = singleVariableHistogram(dsNonNullVariable, variable, bucketDemarcations, factor, columnName)
     histogramGivenUnconditional(dsNonNullVariable, variable, bucketDemarcations, baseHistogram, factor, columnName, crossTabVariables: _*)
   }
   
-  def histogram(ds:Dataset[_], variable: String, nBuckets: Int, crossTabVariables: String*): DataFrame = {
+  def histogram(df:DataFrame, variable: String, nBuckets: Int, crossTabVariables: String*): DataFrame = {
     val (factor, columnName) = (1d, "proportion")
-    val dsNonNullVariable = ds.filter(!col(variable).isNull)
+    val dsNonNullVariable = df.filter(!col(variable).isNull)
     val (baseHistogram, bucketDemarcations) = singleVariableHistogram(dsNonNullVariable, variable, nBuckets, factor, columnName)
     histogramGivenUnconditional(dsNonNullVariable, variable, bucketDemarcations, baseHistogram, factor, columnName, crossTabVariables: _*)
   }
   
-  def histogramPercent(ds:Dataset[_], variable: String, bucketDemarcations: Array[Double], crossTabVariables: String*):
+  def histogramPercent(df:DataFrame, variable: String, bucketDemarcations: Array[Double], crossTabVariables: String*):
   DataFrame = {
     val (factor, columnName) = (100d, "percent")
-    val dsNonNullVariable = ds.filter(!col(variable).isNull)
+    val dsNonNullVariable = df.filter(!col(variable).isNull)
     val baseHistogram = singleVariableHistogram(dsNonNullVariable, variable, bucketDemarcations, factor, columnName)
     histogramGivenUnconditional(
       dsNonNullVariable, variable, bucketDemarcations, baseHistogram, factor, columnName, crossTabVariables: _*)
   }
   
-  def histogramPercent(ds:Dataset[_], variable: String, nBuckets: Int, crossTabVariables: String*): DataFrame = {
+  def histogramPercent(df:DataFrame, variable: String, nBuckets: Int, crossTabVariables: String*): DataFrame = {
     val (factor, columnName) = (100d, "percent")
-    val dsNonNullVariable = ds.filter(!col(variable).isNull)
+    val dsNonNullVariable = df.filter(!col(variable).isNull)
     val (baseHistogram, bucketDemarcations) = singleVariableHistogram(dsNonNullVariable, variable, nBuckets, factor, columnName)
     histogramGivenUnconditional(
       dsNonNullVariable, variable, bucketDemarcations, baseHistogram, factor, columnName, crossTabVariables: _*)
   }
   
   private def histogramGivenUnconditional(
-    ds:Dataset[_], variable: String, bucketDemarcations: Array[Double], baseHistogram: DataFrame, factor: Double,
-    columnName: String, crossTabVariables: String*):
+      df:DataFrame, variable: String, bucketDemarcations: Array[Double], baseHistogram: DataFrame, factor: Double,
+      columnName: String, crossTabVariables: String*):
   DataFrame = {
     val dataFrameWithMergeColumnsOnly = baseHistogram.select(variable, "")
     crossTabVariables.foldLeft(baseHistogram){ case (accumulatedHistogram, crossTabVariable) =>
     
       val crossTabVariableCategories =
-        ds.groupBy(col(crossTabVariable)).count().select(crossTabVariable).collect().toList.map { row =>
+        df.groupBy(col(crossTabVariable)).count().select(crossTabVariable).collect().toList.map { row =>
           Option(row.get(0)).fold(""){_.toString}
         }
     
@@ -54,7 +54,7 @@ object HistogramSpecialist {
         case (accumulatedHistogramForCategory, category) =>
           val categoryNameEmptyReplacedWithText =
             if (category.trim.isEmpty) s"($crossTabVariable missing)" else category
-          val datasetWithOnlyThisCategory = ds.filter(col(crossTabVariable).isNull && category.trim.isEmpty ||
+          val datasetWithOnlyThisCategory = df.filter(col(crossTabVariable).isNull && category.trim.isEmpty ||
             trim(col(crossTabVariable)) === category.trim).cache()
         
           val historgramWithColumnToAdd =
@@ -69,27 +69,27 @@ object HistogramSpecialist {
     }
   }
   
-  private def singleVariableHistogram(ds:Dataset[_], column: String, buckets: Array[Double], factor: Double, columnName: String):
+  private def singleVariableHistogram(df:DataFrame, column: String, buckets: Array[Double], factor: Double, columnName: String):
   DataFrame = {
-    import ds.sparkSession.implicits._
+    import df.sparkSession.implicits._
     val counts =
-      ds.select(column).map(value => value.get(0).toString.toDouble).rdd.histogram(buckets)
-    histogram(ds, column, buckets, counts, factor, columnName)
+      df.select(column).map(value => value.get(0).toString.toDouble).rdd.histogram(buckets)
+    histogram(df, column, buckets, counts, factor, columnName)
   }
   
-  private def singleVariableHistogram(ds:Dataset[_], column: String, nBuckets: Int, factor: Double, columnName: String):
+  private def singleVariableHistogram(df:DataFrame, column: String, nBuckets: Int, factor: Double, columnName: String):
   (DataFrame, Array[Double]) = {
-    import ds.sparkSession.implicits._
+    import df.sparkSession.implicits._
     val (bucketDemarcations, counts) =
-      ds.select(column).map(value => value.get(0).toString.toDouble).rdd.histogram(nBuckets)
-    (histogram(ds, column, bucketDemarcations, counts, factor, columnName), bucketDemarcations)
+      df.select(column).map(value => value.get(0).toString.toDouble).rdd.histogram(nBuckets)
+    (histogram(df, column, bucketDemarcations, counts, factor, columnName), bucketDemarcations)
   }
   
   private def histogram(
-    ds:Dataset[_], column: String, bucketDemarcations: Array[Double], counts: Array[Long], factor: Double, columnName: String):
+    df:DataFrame, column: String, bucketDemarcations: Array[Double], counts: Array[Long], factor: Double, columnName: String):
   DataFrame = {
-    import ds.sparkSession.implicits._
-    import ds.sparkSession.sparkContext
+    import df.sparkSession.implicits._
+    import df.sparkSession.sparkContext
     val bucketBoundaries =
       bucketDemarcations.zipWithIndex.tail.foldLeft(Seq[(Double, Double)]()){
         case (previousBoundaries, (currentDemarcation, index)) =>

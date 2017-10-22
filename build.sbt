@@ -1,6 +1,7 @@
 import Dependencies._
-import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
+import ReleaseTransformations._
 
+releaseCrossBuild := false
 releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
@@ -9,11 +10,10 @@ releaseProcess := Seq[ReleaseStep](
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
-  ReleaseStep(action = Command.process("sonatypeOpen \"com.github.shafiquejamal\" \"richstat\"", _)),
-  ReleaseStep(action = Command.process("publishSigned", _)),
+  releaseStepCommand("publishSigned"),
   setNextVersion,
   commitNextVersion,
-  ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+  releaseStepCommand("sonatypeReleaseAll"),
   pushChanges
 )
 
@@ -25,7 +25,7 @@ lazy val root = (project in file(".")).
     inThisBuild(List(
       organization := "com.github.shafiquejamal",
       scalaVersion := "2.11.11",
-      version      := "0.0.1"
+      version      := "0.0.2"
     )),
     name := "RichStat",
     libraryDependencies ++= Seq(
@@ -42,7 +42,7 @@ pomIncludeRepository := { _ => false }
 
 licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-license.php"))
 
-homepage := Some(url("http://eigenroute.com"))
+homepage := Some(url("https://github.com/shafiquejamal/richstat"))
 
 scmInfo := Some(
   ScmInfo(

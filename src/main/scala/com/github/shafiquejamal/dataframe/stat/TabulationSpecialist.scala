@@ -8,12 +8,12 @@ import org.apache.spark.sql.{DataFrame, Dataset}
 
 object TabulationSpecialist {
     
-    def tab(ds: Dataset[_], variable: String, tabOptions: TabOptions*): Dataset[_] = {
+    def tab(df: DataFrame, variable: String, tabOptions: TabOptions*): DataFrame = {
       val filteredDataset =
         if (tabOptions contains IncludeMissing) {
-          ds.toDF
+          df.toDF
         } else {
-          ds.filter(trim(col(variable)) =!= "")
+          df.filter(trim(col(variable)) =!= "")
         }
       val (factor, columnName) = if (tabOptions contains Percent) (100d, "percent") else (1d, "proportion")
       val total = filteredDataset.count().toDouble
@@ -21,12 +21,12 @@ object TabulationSpecialist {
       .withColumn("count", when(col("count") === col("count"), col("count")).otherwise(null))
     }
   
-    def crossTab(ds: Dataset[_], variable1: String, variable2: String, tabOptions: TabOptions*): DataFrame  = {
+    def crossTab(df: DataFrame, variable1: String, variable2: String, tabOptions: TabOptions*): DataFrame  = {
       val datasetToUse =
         if (tabOptions contains IncludeMissing) {
-          ds
+          df
         } else {
-          ds.filter(trim(col(variable1)) =!= "").filter(trim(col(variable2)) =!= "")
+          df.filter(trim(col(variable1)) =!= "").filter(trim(col(variable2)) =!= "")
         }
       val factor = if (tabOptions contains Percent) 100d else 1d
       val crossTabCounts = datasetToUse.stat.crosstab(variable1, variable2).cache()

@@ -14,30 +14,30 @@ object RichStat {
     case object Percent extends TabOptions
   }
 
-  implicit class Statistician[T](dataset: Dataset[T]) {
+  implicit class Statistician(df: DataFrame) {
     
     def tab(variable: String, tabOptions: TabOptions*): Dataset[_] = {
-      TabulationSpecialist.tab(dataset, variable, tabOptions: _*)
+      TabulationSpecialist.tab(df, variable, tabOptions: _*)
     }
 
     def crossTab(variable1: String, variable2: String, tabOptions: TabOptions*): DataFrame  = {
-      TabulationSpecialist.crossTab(dataset, variable1, variable2, tabOptions: _*)
+      TabulationSpecialist.crossTab(df, variable1, variable2, tabOptions: _*)
     }
   
     def histogram(variable: String, nBuckets: Int, crossTabVariables: String*): DataFrame = {
-      HistogramSpecialist.histogram(dataset, variable, nBuckets, crossTabVariables: _*)
+      HistogramSpecialist.histogram(df, variable, nBuckets, crossTabVariables: _*)
     }
   
     def histogramPercent(variable: String, nBuckets: Int, crossTabVariables: String*): DataFrame = {
-      HistogramSpecialist.histogramPercent(dataset, variable, nBuckets, crossTabVariables: _*)
+      HistogramSpecialist.histogramPercent(df, variable, nBuckets, crossTabVariables: _*)
     }
   
     def histogram(variable: String, bucketDemarcations: Array[Double], crossTabVariables: String*): DataFrame = {
-      HistogramSpecialist.histogram(dataset, variable, bucketDemarcations, crossTabVariables: _*)
+      HistogramSpecialist.histogram(df, variable, bucketDemarcations, crossTabVariables: _*)
     }
   
     def histogramPercent(variable: String, bucketDemarcations: Array[Double], crossTabVariables: String*): DataFrame = {
-      HistogramSpecialist.histogramPercent(dataset, variable, bucketDemarcations, crossTabVariables: _*)
+      HistogramSpecialist.histogramPercent(df, variable, bucketDemarcations, crossTabVariables: _*)
     }
     
   }
