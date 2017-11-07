@@ -2,34 +2,34 @@ package com.github.shafiquejamal.dataframe.stat
 
 import com.github.shafiquejamal.dataframe.stat.RichStat.TabOptions
 import com.github.shafiquejamal.dataframe.stat.RichStat.TabOptions.{ByColumn, ByRow, IncludeMissing, Percent}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, Dataset}
 
 
 object TabulationSpecialist {
     
     def tab(df: DataFrame, variable: String, tabOptions: TabOptions*): DataFrame = {
-      val filteredDataset =
+      val filteredDataFame =
         if (tabOptions contains IncludeMissing) {
           df.toDF
         } else {
           df.filter(trim(col(variable)) =!= "")
         }
       val (factor, columnName) = if (tabOptions contains Percent) (100d, "percent") else (1d, "proportion")
-      val total = filteredDataset.count().toDouble
-      filteredDataset.groupBy(variable).count().withColumn(columnName, lit(factor) * col("count") / lit(total))
+      val total = filteredDataFame.count().toDouble
+      filteredDataFame.groupBy(variable).count().withColumn(columnName, lit(factor) * col("count") / lit(total))
       .withColumn("count", when(col("count") === col("count"), col("count")).otherwise(null))
     }
   
     def crossTab(df: DataFrame, variable1: String, variable2: String, tabOptions: TabOptions*): DataFrame  = {
-      val datasetToUse =
+      val dataFrameToUse =
         if (tabOptions contains IncludeMissing) {
           df
         } else {
           df.filter(trim(col(variable1)) =!= "").filter(trim(col(variable2)) =!= "")
         }
       val factor = if (tabOptions contains Percent) 100d else 1d
-      val crossTabCounts = datasetToUse.stat.crosstab(variable1, variable2).cache()
+      val crossTabCounts = dataFrameToUse.stat.crosstab(variable1, variable2).cache()
       val columnNames = crossTabCounts.columns.tail
 
       if (tabOptions contains ByRow) {

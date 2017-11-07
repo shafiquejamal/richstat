@@ -1,6 +1,6 @@
 package com.github.shafiquejamal.dataframe.stat
 
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.DataFrame
 
 object RichStat {
 
@@ -16,7 +16,7 @@ object RichStat {
 
   implicit class Statistician(df: DataFrame) {
     
-    def tab(variable: String, tabOptions: TabOptions*): Dataset[_] = {
+    def tab(variable: String, tabOptions: TabOptions*): DataFrame = {
       TabulationSpecialist.tab(df, variable, tabOptions: _*)
     }
 
@@ -42,13 +42,13 @@ object RichStat {
     
   }
   
-  implicit class StatWriter[T](dataset: Dataset[T]) {
+  implicit class StatWriter[T](dataFrame: DataFrame) {
   
-    import dataset.sparkSession.implicits._
+    import dataFrame.sparkSession.implicits._
     
     def forCSV(isIncludeHeader: Boolean = true): Seq[Seq[String]] = {
-      val columns = dataset.columns.toSeq
-      val data = dataset.toDF().map { row =>
+      val columns = dataFrame.columns.toSeq
+      val data = dataFrame.toDF().map { row =>
         columns.zipWithIndex.map { case (_, index) => Option(row.get(index)).fold(""){ _.toString } }
       }.collect().toVector
       if (isIncludeHeader) columns +: data else data

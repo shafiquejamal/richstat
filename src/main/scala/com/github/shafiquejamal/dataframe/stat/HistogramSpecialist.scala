@@ -1,7 +1,7 @@
 package com.github.shafiquejamal.dataframe.stat
 
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, lit, trim}
-import org.apache.spark.sql.{DataFrame, Dataset}
 
 
 object HistogramSpecialist {
@@ -54,15 +54,15 @@ object HistogramSpecialist {
         case (accumulatedHistogramForCategory, category) =>
           val categoryNameEmptyReplacedWithText = crossTabVariable + "___" +
             (if (category.trim.isEmpty) s"($crossTabVariable missing)" else category)
-          val datasetWithOnlyThisCategory = df.filter(col(crossTabVariable).isNull && category.trim.isEmpty ||
+          val dataFrameWithOnlyThisCategory = df.filter(col(crossTabVariable).isNull && category.trim.isEmpty ||
             trim(col(crossTabVariable)) === category.trim).cache()
         
-          val historgramWithColumnToAdd =
-            singleVariableHistogram(datasetWithOnlyThisCategory, variable, bucketDemarcations, factor, columnName)
+          val histogramWithColumnToAdd =
+            singleVariableHistogram(dataFrameWithOnlyThisCategory, variable, bucketDemarcations, factor, columnName)
             .withColumnRenamed(columnName, categoryNameEmptyReplacedWithText).drop("count",columnName)
         
           accumulatedHistogramForCategory
-          .join(historgramWithColumnToAdd.select(variable, "",  categoryNameEmptyReplacedWithText), Seq(variable, ""))
+          .join(histogramWithColumnToAdd.select(variable, "",  categoryNameEmptyReplacedWithText), Seq(variable, ""))
       }.drop("count",columnName)
     
       accumulatedHistogram.join(newHistogram, Seq(variable, "")).orderBy(variable)
