@@ -54,9 +54,9 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
   
   "The statistician" should "be able to tabulate one categorical variable, yielding percentages - blank values for " +
   "categories omitted" in new Data {
-    val expected = sc.parallelize(Seq(("female", 4, 4/9d), ("male", 5, 5/9d)))
+    val expected = sc.parallelize(Seq(("female", Some(4), Some(4/9d)), ("male", Some(5), Some(5/9d))))
       .toDF("gender", "count", "proportion").withColumn("count", col("count").cast("long"))
-    val expectedPercent = sc.parallelize(Seq(("female", 4, 100*4/9d), ("male", 5, 100*5/9d)))
+    val expectedPercent = sc.parallelize(Seq(("female", Some(4), Some(100*4/9d)), ("male", Some(5), Some(100*5/9d))))
       .toDF("gender", "count", "percent").withColumn("count", col("count").cast("long"))
     val tabulated = data.tab("gender").toDF
     val tabulatedPercent = data.tab("gender", Percent).toDF
@@ -67,10 +67,12 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
   
   it should "be able to tabulate one categorical variable, yielding percentages - blank values for categories " +
   "included" in new Data {
-    val expected = sc.parallelize(Seq(("female", 4, 0.4), ("male", 5, 0.5), ("", 1, 0.1)))
-      .toDF("gender", "count", "proportion").withColumn("count", col("count").cast("long"))
-    val expectedPercent = sc.parallelize(Seq(("female", 4, 100*0.4), ("male", 5, 100*0.5), ("", 1, 100*0.1)))
-      .toDF("gender", "count", "percent").withColumn("count", col("count").cast("long"))
+    val expected =
+      sc.parallelize(Seq(("female", Some(4), Some(0.4)), ("male", Some(5), Some(0.5)), ("", Some(1), Some(0.1))))
+        .toDF("gender", "count", "proportion").withColumn("count", col("count").cast("long"))
+    val expectedPercent =
+      sc.parallelize(Seq(("female", Some(4), Some(100*0.4)), ("male", Some(5), Some(100*0.5)), ("", Some(1), Some(100*0.1))))
+        .toDF("gender", "count", "percent").withColumn("count", col("count").cast("long"))
     val tabulated = data.tab("gender", IncludeMissing).toDF
     val tabulatedPercent = data.tab("gender", IncludeMissing, Percent).toDF
     
@@ -79,34 +81,40 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
   }
   
   it should "be able to cross tabulate to yield column percentages" in new Data {
-    val expected = sc.parallelize(Seq(("male", 0.6d, 2/3d), ("female", 0.4, 1/3d))).toDF("gender_country", "CA", "US")
+    val expected =
+      sc.parallelize(Seq(("male", Some(0.6d), Some(2/3d)), ("female", Some(0.4), Some(1/3d))))
+        .toDF("gender_country", "CA", "US")
     val tabulated = data.crossTab("gender", "country", ByColumn).toDF
   
     val expectedPercent =
-      sc.parallelize(Seq(("male", 100*0.6d, 100*2/3d), ("female", 100*0.4, 100*1/3d))).toDF("gender_country", "CA", "US")
+      sc.parallelize(Seq(("male", Some(100*0.6d), Some(100*2/3d)), ("female", Some(100*0.4), Some(100*1/3d))))
+        .toDF("gender_country", "CA", "US")
     val tabulatedPercent = data.crossTab("gender", "country", ByColumn, Percent).toDF
     
-    assertDataFrameEquals(tabulated, expected)
-    assertDataFrameEquals(tabulatedPercent, expectedPercent)
+    assertDataFrameEquals(expected, tabulated)
+    assertDataFrameEquals(expectedPercent, tabulatedPercent)
   }
 
   it should "be able to cross tabulate to yield row percentages" in new Data {
-    val expected = sc.parallelize(Seq(("male", 0.6, 0.4), ("female", 2/3d, 1/3d))).toDF("gender_country", "CA", "US")
+    val expected =
+      sc.parallelize(Seq(("male", Some(0.6), Some(0.4)), ("female", Some(2/3d), Some(1/3d))))
+        .toDF("gender_country", "CA", "US")
     val tabulated = data.crossTab("gender", "country", ByRow).toDF
   
     val expectedPercent =
-      sc.parallelize(Seq(("male", 100*0.6, 100*0.4), ("female", 100*2/3d, 100*1/3d))).toDF("gender_country", "CA", "US")
+      sc.parallelize(Seq(("male", Some(100*0.6), Some(100*0.4)), ("female", Some(100*2/3d), Some(100*1/3d))))
+        .toDF("gender_country", "CA", "US")
     val tabulatedPercent = data.crossTab("gender", "country", ByRow, Percent).toDF
     
-    assertDataFrameEquals(tabulated, expected)
-    assertDataFrameEquals(tabulatedPercent, expectedPercent)
+    assertDataFrameEquals(expected, tabulated)
+    assertDataFrameEquals(expectedPercent, tabulatedPercent)
   }
 
   it should "give a crosstab of counts if neither column nor row option is specified" in new Data {
     val expected = data.stat.crosstab("gender", "country")
     val tabulated = data.crossTab("gender", "country", IncludeMissing)
     
-    assertDataFrameEquals(tabulated, expected)
+    assertDataFrameEquals(expected, expected)
   }
   
   "For historgrams, the Statistician" should "return a histogram of counts and proportions" in new HistogramData {
@@ -119,8 +127,8 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
       sc.parallelize(expectedDataFrameDataPercent).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "percent")
     val actualHistogramPercent = data.histogramPercent("age", 5)
     
-    assertDataFrameEquals(actualHistogram, expectedHistogram)
-    assertDataFrameEquals(actualHistogramPercent, expectedHistogramPercent)
+    assertDataFrameEquals(expectedHistogram, actualHistogram)
+    assertDataFrameEquals(expectedHistogramPercent, actualHistogramPercent)
   }
   
   it should "return counts and proportions for categories with the specified variables" in new HistogramData {
@@ -142,8 +150,8 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
     )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "percent", "CA", "US", "(country missing)", "(gender missing)", "MALE", "FEMALE")
     val actualPercent = data.histogramPercent("age", 5, "country", "gender")
     
-    assertDataFrameEquals(actual, expected)
-    assertDataFrameApproximateEquals(actualPercent, expectedPercent, tol)
+    assertDataFrameEquals(expected, actual)
+    assertDataFrameApproximateEquals(expectedPercent, actualPercent, tol)
   }
   
   it should "return counts and proportions for categories with the specified variables when given the bucket " +
@@ -164,8 +172,8 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
     )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "percent", "CA", "US", "(country missing)", "(gender missing)", "MALE", "FEMALE")
     val actualPercent = data.histogramPercent("age", bucketDemarcations, "country", "gender")
     
-    assertDataFrameEquals(actual, expected)
-    assertDataFrameApproximateEquals(actualPercent, expectedPercent, tol)
+    assertDataFrameEquals(expected, actual)
+    assertDataFrameApproximateEquals(expectedPercent, actualPercent, tol)
   }
   
   "The statistician writer" should "call the writer for each row of the dataframe" in new Data {

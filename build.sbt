@@ -1,5 +1,6 @@
 import Dependencies._
 import ReleaseTransformations._
+import sbt.StdoutOutput
 
 releaseCrossBuild := false
 releaseProcess := Seq[ReleaseStep](
@@ -17,15 +18,15 @@ releaseProcess := Seq[ReleaseStep](
   pushChanges
 )
 
-val sparkVersion = "2.1.0"
-val sparkTestingVersion = sparkVersion + "_0.7.4"
+val sparkVersion = "[2.1,)"
+val sparkTestingVersion = "2.1.0_0.7.4"
 
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
       organization := "com.github.shafiquejamal",
       scalaVersion := "2.11.11",
-      version      := "0.0.2"
+      version      := "0.0.3"
     )),
     name := "RichStat",
     libraryDependencies ++= Seq(
@@ -36,6 +37,12 @@ lazy val root = (project in file(".")).
       scalaTest % Test
     )
   )
+
+javaOptions in run ++= Seq(
+  "-Dlog4j.debug=true",
+  "-Dlog4j.configuration=log4j.properties")
+outputStrategy := Some(StdoutOutput)
+
 
 useGpg := true
 pomIncludeRepository := { _ => false }

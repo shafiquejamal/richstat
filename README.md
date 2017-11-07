@@ -9,8 +9,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
 
-import com.eigenroute.dataframe.stat.RichStat.TabOptions._
-import com.eigenroute.dataframe.stat.RichStat._
+import com.github.shafiquejamal.dataframe.stat.RichStat.TabOptions._
+import com.github.shafiquejamal.dataframe.stat.RichStat._
 
 implicit val spark: SparkSession =
   SparkSession
@@ -134,6 +134,7 @@ val data: DataFrame = sc.parallelize(histogramData).toDF("age", "gender", "count
 run the following commands:
 ```
 data.histogram("age", 5).show()
+data.histogramPercent("age", 5).show()
 data.crossTab("gender", "country", ByColumn, Percent).toDF.show()
 ```
 to get the following output, respectively:
@@ -156,6 +157,12 @@ to get the following output, respectively:
 |12.0|16.0|      14.0|             2.0|   38|16.740088105726873|
 |16.0|20.0|      18.0|             2.0|   78| 34.36123348017621|
 +----+----+----------+----------------+-----+------------------+
++--------------+-----------------+-----+
+|gender_country|               CA|   US|
++--------------+-----------------+-----+
+|          MALE|33.87096774193548|100.0|
+|        FEMALE|66.12903225806451|  0.0|
++--------------+-----------------+-----+
 ```
 You can also get a breakdown of the variable of interest by multiple categorical variables:
 ```
