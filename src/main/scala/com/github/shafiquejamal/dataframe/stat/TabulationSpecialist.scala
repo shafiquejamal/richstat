@@ -33,16 +33,20 @@ object TabulationSpecialist {
       val columnNames = crossTabCounts.columns.tail
 
       if (tabOptions contains ByRow) {
-        crossTabRowPercent(crossTabCounts, columnNames, variable1, variable2, factor)
+        crossTabRowPercent(crossTabCounts, columnNames, variable2, factor)
       } else if (tabOptions contains ByColumn) {
-        crossTabColumnPercent(crossTabCounts, columnNames, variable1, variable2, factor)
+        crossTabColumnPercent(crossTabCounts, columnNames, variable2, factor)
       } else {
-        crossTabCounts
+        if (tabOptions contains Percent) {
+          crossTabColumnPercent(crossTabCounts, columnNames, variable2, factor)
+        } else {
+          crossTabCounts
+        }
       }
     }
     
     private def crossTabColumnPercent(
-        crossTabCounts: DataFrame, columnNames: Array[String], column1: String, column2: String, factor: Double):
+        crossTabCounts: DataFrame, columnNames: Array[String], column2: String, factor: Double):
     DataFrame = {
       val columnSumsDF = crossTabCounts.groupBy().sum().cache()
       val columnSumsVector = columnSumsDF.first.toSeq.map(_.toString.toDouble)
@@ -51,19 +55,21 @@ object TabulationSpecialist {
         if (total == 0) {
           crossTab
         } else {
-          crossTab.withColumn(columnName, lit(factor) * col(columnName) / lit(total)).cache()
+          crossTab.withColumn(columnName, col(columnName) * factor / total).cache()
+            .withColumnRenamed(columnName, s"${column2}___$columnName")
         }
       }
     }
 
     private def crossTabRowPercent(
-        crossTabCounts: DataFrame, columnNames: Array[String], column1: String, column2: String, factor: Double):
+        crossTabCounts: DataFrame, columnNames: Array[String], column2: String, factor: Double):
     DataFrame = {
       val crossTabCountsWithRowTotals =
         crossTabCounts.withColumn("sum", columnNames.map(col).reduce((c1, c2) => c1 + c2)).cache()
 
       columnNames.zipWithIndex.foldLeft(crossTabCountsWithRowTotals){ case (crossTab, (columnName, index)) =>
           crossTab.withColumn(columnName, lit(factor) * col(columnName) / col("sum")).cache()
+            .withColumnRenamed(columnName, s"${column2}___$columnName")
       }.drop("sum")
     }
   

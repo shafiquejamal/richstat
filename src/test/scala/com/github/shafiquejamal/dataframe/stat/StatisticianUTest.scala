@@ -83,12 +83,12 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
   it should "be able to cross tabulate to yield column percentages" in new Data {
     val expected =
       sc.parallelize(Seq(("male", Some(0.6d), Some(2/3d)), ("female", Some(0.4), Some(1/3d))))
-        .toDF("gender_country", "CA", "US")
+        .toDF("gender_country", "country___CA", "country___US")
     val tabulated = data.crossTab("gender", "country", ByColumn).toDF
   
     val expectedPercent =
       sc.parallelize(Seq(("male", Some(100*0.6d), Some(100*2/3d)), ("female", Some(100*0.4), Some(100*1/3d))))
-        .toDF("gender_country", "CA", "US")
+        .toDF("gender_country", "country___CA", "country___US")
     val tabulatedPercent = data.crossTab("gender", "country", ByColumn, Percent).toDF
     
     assertDataFrameEquals(expected, tabulated)
@@ -98,12 +98,12 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
   it should "be able to cross tabulate to yield row percentages" in new Data {
     val expected =
       sc.parallelize(Seq(("male", Some(0.6), Some(0.4)), ("female", Some(2/3d), Some(1/3d))))
-        .toDF("gender_country", "CA", "US")
+        .toDF("gender_country", "country___CA", "country___US")
     val tabulated = data.crossTab("gender", "country", ByRow).toDF
   
     val expectedPercent =
       sc.parallelize(Seq(("male", Some(100*0.6), Some(100*0.4)), ("female", Some(100*2/3d), Some(100*1/3d))))
-        .toDF("gender_country", "CA", "US")
+        .toDF("gender_country", "country___CA", "country___US")
     val tabulatedPercent = data.crossTab("gender", "country", ByRow, Percent).toDF
     
     assertDataFrameEquals(expected, tabulated)
@@ -113,6 +113,16 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
   it should "give a crosstab of counts if neither column nor row option is specified" in new Data {
     val expected = data.stat.crosstab("gender", "country")
     val tabulated = data.crossTab("gender", "country", IncludeMissing)
+    
+    assertDataFrameEquals(expected, expected)
+  }
+  
+  it should "give a crosstab of counts and percent if neither column nor row option is specified, but the Percent " +
+  "option is specified" in new Data {
+    val expected =
+      sc.parallelize(Seq(("male", Some(100*0.6d), Some(100*2/3d)), ("female", Some(100*0.4), Some(100*1/3d))))
+        .toDF("gender_country", "country___CA", "country___US")
+    val tabulated = data.crossTab("gender", "country", Percent)
     
     assertDataFrameEquals(expected, expected)
   }
