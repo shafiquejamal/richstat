@@ -45,15 +45,15 @@ object HistogramSpecialist {
     val dataFrameWithMergeColumnsOnly = baseHistogram.select(variable, "")
     crossTabVariables.foldLeft(baseHistogram){ case (accumulatedHistogram, crossTabVariable) =>
     
-      val crossTabVariableCategories =
+      val crossTabVariableCategories: List[String] =
         df.groupBy(col(crossTabVariable)).count().select(crossTabVariable).collect().toList.map { row =>
           Option(row.get(0)).fold(""){_.toString}
         }
     
       val newHistogram = crossTabVariableCategories.foldLeft(dataFrameWithMergeColumnsOnly){
         case (accumulatedHistogramForCategory, category) =>
-          val categoryNameEmptyReplacedWithText =
-            if (category.trim.isEmpty) s"($crossTabVariable missing)" else category
+          val categoryNameEmptyReplacedWithText = crossTabVariable + "___" +
+            (if (category.trim.isEmpty) s"($crossTabVariable missing)" else category)
           val datasetWithOnlyThisCategory = df.filter(col(crossTabVariable).isNull && category.trim.isEmpty ||
             trim(col(crossTabVariable)) === category.trim).cache()
         

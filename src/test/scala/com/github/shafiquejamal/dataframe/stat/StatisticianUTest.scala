@@ -138,7 +138,8 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
       (8d, 12d, 10d, 2d, 18, 18d/227, 11d/countCA, 1d/countUS, 6d/countCountryMissing, 14d/countGenderMissing, 0d/countM, 4d/countF),
       (12d, 16d, 14d, 2d, 38, 38d/227, 19d/countCA, 6d/countUS, 13d/countCountryMissing, 19d/countGenderMissing, 0d/countM, 19d/countF),
       (16d, 20d, 18d, 2d, 78, 78d/227, 33d/countCA, 19d/countUS, 26d/countCountryMissing, 39d/countGenderMissing, 0d/countM, 39d/countF)
-    )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "proportion", "CA", "US", "(country missing)", "(gender missing)", "MALE", "FEMALE")
+    )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "proportion", "country___CA", "country___US",
+      "country___(country missing)", "gender___(gender missing)", "gender___MALE", "gender___FEMALE")
     val actual = data.histogram("age", 5, "country", "gender")
     
     val expectedPercent = sc.parallelize(Seq[(Double, Double, Double, Double, Long, Double, Double, Double, Double, Double, Double, Double)](
@@ -147,7 +148,8 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
       (8d, 12d, 10d, 2d, 18, 100*18d/227, 100*11d/countCA, 100*1d/countUS, 100*6d/countCountryMissing, 100*14d/countGenderMissing, 100*0d/countM, 100*4d/countF),
       (12d, 16d, 14d, 2d, 38, 100*38d/227, 100*19d/countCA, 100*6d/countUS, 100*13d/countCountryMissing, 100*19d/countGenderMissing, 100*0d/countM, 100*19d/countF),
       (16d, 20d, 18d, 2d, 78, 100*78d/227, 100*33d/countCA, 100*19d/countUS, 100*26d/countCountryMissing, 100*39d/countGenderMissing, 100*0d/countM, 100*39d/countF)
-    )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "percent", "CA", "US", "(country missing)", "(gender missing)", "MALE", "FEMALE")
+    )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "percent", "country___CA", "country___US",
+      "country___(country missing)", "gender___(gender missing)", "gender___MALE", "gender___FEMALE")
     val actualPercent = data.histogramPercent("age", 5, "country", "gender")
     
     assertDataFrameEquals(expected, actual)
@@ -162,14 +164,16 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
       (0d, 8d, 4d, 4d, 42 + 51,  (42d + 51d)/227, (18d + 34d)/countCA, (10d + 0d)/countUS, (14d + 17d)/countCountryMissing, (21d + 25d)/countGenderMissing, (21d + 26d)/countM,         0d/countF),
       (8d, 16d, 12d, 4d, 18 + 38, (18d + 38d)/227, (11d + 19d)/countCA,  (1d + 6f)/countUS,  (6d + 13d)/countCountryMissing, (14d + 19d)/countGenderMissing,          0d/countM, (4d + 19d)/countF),
       (16d, 20d, 18d, 2d, 78,             78d/227,         33d/countCA,        19d/countUS,         26d/countCountryMissing,         39d/countGenderMissing,          0d/countM,        39d/countF)
-    )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "proportion", "CA", "US", "(country missing)", "(gender missing)", "MALE", "FEMALE")
+    )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "proportion", "country___CA", "country___US",
+      "country___(country missing)", "gender___(gender missing)", "gender___MALE", "gender___FEMALE")
     val actual = data.histogram("age", bucketDemarcations, "country", "gender")
   
     val expectedPercent = sc.parallelize(Seq[(Double, Double, Double, Double, Long, Double, Double, Double, Double, Double, Double, Double)](
       (0d, 8d, 4d, 4d, 42 + 51,  100*(42d + 51d)/227, 100*(18d + 34d)/countCA, 100*(10d + 0d)/countUS, 100*(14d + 17d)/countCountryMissing, 100*(21d + 25d)/countGenderMissing, 100*(21d + 26d)/countM,         100*0d/countF),
       (8d, 16d, 12d, 4d, 18 + 38, 100*(18d + 38d)/227, 100*(11d + 19d)/countCA,  100*(1d + 6f)/countUS,  100*(6d + 13d)/countCountryMissing, 100*(14d + 19d)/countGenderMissing,          100*0d/countM, 100*(4d + 19d)/countF),
       (16d, 20d, 18d, 2d, 78,             100*78d/227,         100*33d/countCA,        100*19d/countUS,         100*26d/countCountryMissing,         100*39d/countGenderMissing,          100*0d/countM,        100*39d/countF)
-    )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "percent", "CA", "US", "(country missing)", "(gender missing)", "MALE", "FEMALE")
+    )).toDF("age", "", "_midpoint_", "_rangeHalfWidth_", "count", "percent", "country___CA", "country___US",
+      "country___(country missing)", "gender___(gender missing)", "gender___MALE", "gender___FEMALE")
     val actualPercent = data.histogramPercent("age", bucketDemarcations, "country", "gender")
     
     assertDataFrameEquals(expected, actual)
