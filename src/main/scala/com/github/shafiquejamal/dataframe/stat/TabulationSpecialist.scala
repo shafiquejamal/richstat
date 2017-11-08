@@ -40,7 +40,10 @@ object TabulationSpecialist {
         if (tabOptions contains Percent) {
           crossTabColumnPercent(crossTabCounts, columnNames, variable2, factor)
         } else {
-          crossTabCounts
+          val columnsToRename = crossTabCounts.columns.toSeq.tail
+          columnsToRename.foldLeft(crossTabCounts){ case (accumulatedDF, columnNameToRename) =>
+            accumulatedDF.withColumnRenamed(columnNameToRename, s"${variable2}___$columnNameToRename")
+          }
         }
       }
     }
