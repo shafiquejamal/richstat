@@ -1,6 +1,14 @@
 # richstat
 Library for computing tables (tabulations and cross-tabulations) and histogram data in a format amenable for plotting
 
+## Installation
+
+To add to your SBT project, add the following to libraryDependencies:
+
+```
+"com.github.shafiquejamal" % "richstat_2.11" % "0.0.4"
+```
+
 ## Examples - Tabulations
 
 ### Simple tabulation
