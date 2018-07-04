@@ -86,7 +86,12 @@ object HistogramSpecialist {
   }
   
   private def histogram(
-    df:DataFrame, column: String, bucketDemarcations: Array[Double], counts: Array[Long], factor: Double, columnName: String):
+    df:DataFrame,
+    column: String,
+    bucketDemarcations: Array[Double],
+    counts: Array[Long],
+    factor: Double,
+    columnName: String):
   DataFrame = {
     import df.sparkSession.implicits._
     import df.sparkSession.sparkContext

@@ -51,7 +51,16 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
           (12d, 16d, 14d, 2d, 38.toLong, 38/totalCounts),
           (16d, 20d, 18d, 2d, 78.toLong, 78/totalCounts))
   }
-  
+
+  trait WeightedHistogramData {
+    val x = Seq[Double](0.5, 0.5, 1, 1, 1, 1, 1.5, 1.5, 1.5, 2, 2, 2, 2, 2, 2)
+    val w = Seq[Double](10, 20, 1, 1, 2, 1, 6, 6, 2, 0.5, 0.5, 0.5, 0.5, 1, 1)
+    val header = Seq[String]("x", "w")
+    val data = x.zip(w)
+    val dfWithWeights = sc.parallelize(data).toDF(header: _*)
+  }
+
+
   "The statistician" should "be able to tabulate one categorical variable, yielding percentages - blank values for " +
   "categories omitted" in new Data {
     val expected = sc.parallelize(Seq(("female", Some(4), Some(4/9d)), ("male", Some(5), Some(5/9d))))
@@ -189,7 +198,7 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
     assertDataFrameEquals(expected, actual)
     assertDataFrameApproximateEquals(expectedPercent, actualPercent, tol)
   }
-  
+
   "The statistician writer" should "call the writer for each row of the dataframe" in new Data {
     var rowsWrittenOut = Seq[Seq[String]]()
     def writer(row: Seq[String]): Unit = { rowsWrittenOut = rowsWrittenOut :+ row }

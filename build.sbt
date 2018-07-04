@@ -20,6 +20,7 @@ releaseProcess := Seq[ReleaseStep](
 
 val sparkVersion = "[2.1,)"
 val sparkTestingVersion = "2.1.0_0.7.4"
+parallelExecution in Test := false
 
 lazy val root = (project in file(".")).
   settings(
