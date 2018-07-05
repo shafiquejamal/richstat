@@ -52,15 +52,6 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
           (16d, 20d, 18d, 2d, 78.toLong, 78/totalCounts))
   }
 
-  trait WeightedHistogramData {
-    val x = Seq[Double](0.5, 0.5, 1, 1, 1, 1, 1.5, 1.5, 1.5, 2, 2, 2, 2, 2, 2)
-    val w = Seq[Double](10, 20, 1, 1, 2, 1, 6, 6, 2, 0.5, 0.5, 0.5, 0.5, 1, 1)
-    val header = Seq[String]("x", "w")
-    val data = x.zip(w)
-    val dfWithWeights = sc.parallelize(data).toDF(header: _*)
-  }
-
-
   "The statistician" should "be able to tabulate one categorical variable, yielding percentages - blank values for " +
   "categories omitted" in new Data {
     val expected = sc.parallelize(Seq(("female", Some(4), Some(4/9d)), ("male", Some(5), Some(5/9d))))
@@ -223,6 +214,41 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
       Seq[String](gender, age.toString, Option(country).fold(""){_.toString}) }
     data.forCSV().map(_.toList) should contain theSameElementsInOrderAs header +: expectedGuts
     data.forCSV(isIncludeHeader = false) should contain theSameElementsInOrderAs expectedGuts
+  }
+
+  trait WeightedHistogramData {
+    val data = Seq[(Double, Double)](
+      (0.5, 10),
+      (0.5, 20),
+      (1, 1),
+      (1, 1),
+      (1, 2),
+      (1, 1),
+      (1.5, 6),
+      (1.5, 6),
+      (1.5, 2),
+      (2, 0.5),
+      (2, 0.5),
+      (2, 0.5),
+      (2, 0.5),
+      (2, 1),
+      (2, 1)
+    )
+    val inputDF = sc.parallelize(data).toDF("x", "w")
+  }
+  
+  "Calculating a weighted histogram" should "yield a distribution weighted by the specified variable" in
+  new WeightedHistogramData {
+    val expected = sc.parallelize(Seq[(Long, Option[Double], Option[Double], Option[Double], Option[Double], Option[Double], Option[Double], Option[Double])](
+      (6L, Some(4d), Some(0.4), Some(4d/53), Some(1.75), Some(2.25), Some(2d), Some(0.5)),
+      (4L, Some(5d), Some(4d/15), Some(5d/53), Some(0.75), Some(1.25), Some(1d), Some(0.5)),
+      (3L, Some(14d), Some(0.2), Some(14d/53), Some(1.25), Some(1.75), Some(1.5), Some(0.5)),
+      (2L, Some(30d), Some(2d/15), Some(30d/53), Some(0.25), Some(0.75), Some(0.5), Some(0.5))
+    )).toDF("count(x)", "sum(w)", "x_prop", "w_prop", "x_lower_bound", "x_upper_bound", "x_midpoint", "x_range")
+    val bucketDemarcations = 0.25.to(2.25, 0.5)
+    val maybeActual = inputDF.weightedHistogram("x", "w", bucketDemarcations)
+
+    assertDataFrameApproximateEquals(expected, maybeActual.get, tol)
   }
   
 }

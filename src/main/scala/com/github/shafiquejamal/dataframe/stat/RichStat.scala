@@ -39,7 +39,14 @@ object RichStat {
     def histogramPercent(variable: String, bucketDemarcations: Array[Double], crossTabVariables: String*): DataFrame = {
       HistogramSpecialist.histogramPercent(df, variable, bucketDemarcations, crossTabVariables: _*)
     }
-    
+
+    def weightedHistogram(variable: String, weightVariable: String, bucketDemarcations: Seq[Double]): Option[DataFrame] = {
+      WeightedHistogram.maybeHistogram(df, variable, weightVariable, bucketDemarcations)
+    }
+
+    def weightedHistogram(variable: String, weightVariable: String, nBuckets: Int): Option[DataFrame] = {
+      WeightedHistogram.maybeHistogram(df, variable, weightVariable, nBuckets)
+    }
   }
   
   implicit class StatWriter[T](dataFrame: DataFrame) {
