@@ -231,12 +231,13 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
       (2, 0.5),
       (2, 0.5),
       (2, 0.5),
-      (2, 1),
-      (2, 1)
+      (2.24, 1),
+      (2.25, 1),
+      (2.26, 100)
     )
     val inputDF = sc.parallelize(data).toDF("x", "w")
   }
-  
+
   "Calculating a weighted histogram" should "yield a distribution weighted by the specified variable" in
   new WeightedHistogramData {
     val expected = sc.parallelize(Seq[(Long, Option[Double], Option[Double], Option[Double], Option[Double], Option[Double], Option[Double], Option[Double])](
@@ -246,9 +247,9 @@ class StatisticianUTest extends FlatSpecLike with Matchers with DataFrameSuiteBa
       (2L, Some(30d), Some(2d/15), Some(30d/53), Some(0.25), Some(0.75), Some(0.5), Some(0.5))
     )).toDF("count(x)", "sum(w)", "x_prop", "w_prop", "x_lower_bound", "x_upper_bound", "x_midpoint", "x_range")
     val bucketDemarcations = 0.25.to(2.25, 0.5)
-    val maybeActual = inputDF.weightedHistogram("x", "w", bucketDemarcations)
+    val actual = inputDF.weightedHistogram("x", "w", bucketDemarcations).map(_.drop("_grouped_")).get
 
-    assertDataFrameApproximateEquals(expected, maybeActual.get, tol)
+    assertDataFrameApproximateEquals(expected, actual, tol)
   }
   
 }

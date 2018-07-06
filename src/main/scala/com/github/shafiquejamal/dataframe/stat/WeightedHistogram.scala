@@ -49,6 +49,7 @@ object WeightedHistogram {
     val hist = df.withColumn("_grouped_", generateCategoricalVariableFrom(df(column), bucketDemarcations, "_", "_to_", "_"))
         .groupBy("_grouped_")
         .agg(count(column), sum(weightColumn))
+        .filter(col("_grouped_") =!= lit("__other__"))
     val maybeCount: Option[Double] = toMaybeDoubleFrom(hist.select(sum(s"count($column)")).collect()(0))
     val maybeSumOfWeights: Option[Double] = toMaybeDoubleFrom(hist.select(sum(s"sum($weightColumn)")).collect()(0))
     for {
@@ -67,7 +68,6 @@ object WeightedHistogram {
         .withColumn(s"${column}_midpoint",
           col(s"${column}_lower_bound") + (col(s"${column}_upper_bound") - col(s"${column}_lower_bound")) / 2)
         .withColumn(s"${column}_range", col(s"${column}_upper_bound") - col(s"${column}_lower_bound"))
-        .drop("_grouped_")
     }
   }
 

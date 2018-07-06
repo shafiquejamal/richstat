@@ -12,14 +12,19 @@ object DataFrameUtils {
 
     def grouper(groups: Seq[Double], previousGroupDemarcation: Double): Column = {
       if (groups.isEmpty) {
-        lit(null)
+        lit("__other__")
       } else {
         val currentDemarcation = groups.head
         val List(lowerValue, upperValue) =
           List(previousGroupDemarcation, currentDemarcation).map(_.toString.replaceAll("""\.""", replaceDecimalWith))
         val columnValue = s"$preText$lowerValue$midText$upperValue$postText"
-        when(source >= previousGroupDemarcation && source < currentDemarcation, lit(columnValue))
-        .otherwise(grouper(groups.tail, currentDemarcation))
+        if (groups.tail.nonEmpty) {
+          when(source >= previousGroupDemarcation && source < currentDemarcation, lit(columnValue))
+            .otherwise(grouper(groups.tail, currentDemarcation))
+        } else {
+          when(source >= previousGroupDemarcation && source <= currentDemarcation, lit(columnValue))
+            .otherwise(grouper(groups.tail, currentDemarcation))
+        }
       }
     }
 
